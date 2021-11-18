@@ -1,18 +1,11 @@
 library flutter_html;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_html/html_parser.dart';
-import 'package:flutter_html/image_render.dart';
 import 'package:flutter_html/src/html_elements.dart';
 import 'package:flutter_html/style.dart';
 import 'package:html/dom.dart' as dom;
-import 'package:webview_flutter/webview_flutter.dart';
-
-//export render context api
 export 'package:flutter_html/html_parser.dart';
-export 'package:flutter_html/image_render.dart';
-//export src for advanced custom render uses (e.g. casting context.tree)
 export 'package:flutter_html/src/anchor.dart';
 export 'package:flutter_html/src/interactable_element.dart';
 export 'package:flutter_html/src/layout_element.dart';
@@ -54,7 +47,6 @@ class Html extends StatelessWidget {
     this.onLinkTap,
     this.onAnchorTap,
     this.customRender = const {},
-    this.customImageRenders = const {},
     this.onCssParseError,
     this.onImageError,
     this.onMathError,
@@ -62,7 +54,6 @@ class Html extends StatelessWidget {
     this.onImageTap,
     this.tagsList = const [],
     this.style = const {},
-    this.navigationDelegateForIframe,
   })  : document = null,
         assert(data != null),
         _anchorKey = anchorKey ?? GlobalKey(),
@@ -75,7 +66,6 @@ class Html extends StatelessWidget {
     this.onLinkTap,
     this.onAnchorTap,
     this.customRender = const {},
-    this.customImageRenders = const {},
     this.onCssParseError,
     this.onImageError,
     this.onMathError,
@@ -83,7 +73,6 @@ class Html extends StatelessWidget {
     this.onImageTap,
     this.tagsList = const [],
     this.style = const {},
-    this.navigationDelegateForIframe,
   })  : data = null,
         assert(document != null),
         _anchorKey = anchorKey ?? GlobalKey(),
@@ -104,10 +93,6 @@ class Html extends StatelessWidget {
   /// A function that defines what to do when an anchor link is tapped. When this value is set,
   /// the default anchor behaviour is overwritten.
   final OnTap? onAnchorTap;
-
-  /// An API that allows you to customize the entire process of image rendering.
-  /// See the README for more details.
-  final Map<ImageSourceMatcher, ImageRender> customImageRenders;
 
   /// A function that defines what to do when CSS fails to parse
   final OnCssParseError? onCssParseError;
@@ -136,11 +121,6 @@ class Html extends StatelessWidget {
   /// An API that allows you to override the default style for any HTML element
   final Map<String, Style> style;
 
-  /// Decides how to handle a specific navigation request in the WebView of an
-  /// Iframe. It's necessary to use the webview_flutter package inside the app
-  /// to use NavigationDelegate.
-  final NavigationDelegate? navigationDelegateForIframe;
-
   static List<String> get tags => new List<String>.from(STYLED_ELEMENTS)
     ..addAll(INTERACTABLE_ELEMENTS)
     ..addAll(REPLACED_ELEMENTS)
@@ -150,8 +130,7 @@ class Html extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dom.Document doc =
-        data != null ? HtmlParser.parseHTML(data!) : document!;
+    final dom.Document doc = data != null ? HtmlParser.parseHTML(data!) : document!;
     final double? width = shrinkWrap ? null : MediaQuery.of(context).size.width;
 
     return Container(
@@ -169,11 +148,7 @@ class Html extends StatelessWidget {
         selectable: false,
         style: style,
         customRender: customRender,
-        imageRenders: {}
-          ..addAll(customImageRenders)
-          ..addAll(defaultImageRenders),
         tagsList: tagsList.isEmpty ? Html.tags : tagsList,
-        navigationDelegateForIframe: navigationDelegateForIframe,
       ),
     );
   }
@@ -211,34 +186,34 @@ class SelectableHtml extends StatelessWidget {
   /// (e.g. bold or italic), while container related styling (e.g. borders or padding/margin)
   /// do not work because we can't use the `ContainerSpan` class (it needs an enclosing `WidgetSpan`).
 
-  SelectableHtml({
-    Key? key,
-    GlobalKey? anchorKey,
-    required this.data,
-    this.onLinkTap,
-    this.onAnchorTap,
-    this.onCssParseError,
-    this.shrinkWrap = false,
-    this.style = const {},
-    this.tagsList = const [],
-    this.selectionControls
-  }) : document = null,
+  SelectableHtml(
+      {Key? key,
+      GlobalKey? anchorKey,
+      required this.data,
+      this.onLinkTap,
+      this.onAnchorTap,
+      this.onCssParseError,
+      this.shrinkWrap = false,
+      this.style = const {},
+      this.tagsList = const [],
+      this.selectionControls})
+      : document = null,
         assert(data != null),
         _anchorKey = anchorKey ?? GlobalKey(),
         super(key: key);
 
-  SelectableHtml.fromDom({
-    Key? key,
-    GlobalKey? anchorKey,
-    required this.document,
-    this.onLinkTap,
-    this.onAnchorTap,
-    this.onCssParseError,
-    this.shrinkWrap = false,
-    this.style = const {},
-    this.tagsList = const [],
-    this.selectionControls
-  }) : data = null,
+  SelectableHtml.fromDom(
+      {Key? key,
+      GlobalKey? anchorKey,
+      required this.document,
+      this.onLinkTap,
+      this.onAnchorTap,
+      this.onCssParseError,
+      this.shrinkWrap = false,
+      this.style = const {},
+      this.tagsList = const [],
+      this.selectionControls})
+      : data = null,
         assert(document != null),
         _anchorKey = anchorKey ?? GlobalKey(),
         super(key: key);
@@ -298,9 +273,7 @@ class SelectableHtml extends StatelessWidget {
         selectable: true,
         style: style,
         customRender: {},
-        imageRenders: defaultImageRenders,
         tagsList: tagsList.isEmpty ? SelectableHtml.tags : tagsList,
-        navigationDelegateForIframe: null,
         selectionControls: selectionControls,
       ),
     );
